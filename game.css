@@ -1,0 +1,57 @@
+#game {
+	border: 1px solid #777;
+	margin: auto;
+	width: 500px;
+}
+
+	#game .gameElement {
+		display: inline-block;
+		vertical-align: middle;
+	}
+	
+	#game .board {
+		line-height: 10px;
+		padding: 30px;
+		width: 440px;
+	}
+	
+		#game .board .dot {
+			background: black;
+			border-radius: 10px;
+			height: 20px;
+			width: 20px;
+		}
+		
+		#game .board .line {
+			background: #AEA;
+			margin: 5px;
+			height: 10px;
+			width: 110px;
+		}
+		
+		#game .board .vertical.line { /* We could use CSS transform but it's annoying */
+			height: 110px;
+			width: 10px;
+		}
+		
+		#game .board .line.checked {
+			background: darkgreen;
+		}
+		
+		#game .board .line:hover {
+			background: purple;
+		}
+		
+		#game .board .box {
+			background: #ddd;
+			height: 110px;
+			margin: 5px;
+			width: 110px;
+		}
+	
+	#game .scores {
+		font-size: 1.2em;
+		font-weight: bold;
+		padding: 1em;
+		text-align: center;
+	}
