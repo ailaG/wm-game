@@ -3,6 +3,13 @@
 	Galia Bahat <galia@galiaba.com>
 	
 	Note: Partially prepared for n!=4. The JS is, the CSS isn't. It's a small project after all :)
+
+	Note: Naming conventions: lowerCamelCase for normal functions, underscores_like_that for vars or questions that 
+		return a boolean such as is_this_the_real_life() is_this_just_fantasy(). I can work with other conventions
+		I just like this one.
+	
+	TODO: The way a box checks whether it's completed and the way the game checks whether it's done needs to 
+		change into something like $.deferred / promises
 ***/
 
 
@@ -12,21 +19,12 @@ $.fn.dotsAndBoxes = function(user_options) {
 	var options = $.extend(true, {}, $.fn.dotsAndBoxes.defaults, user_options);
 	var game = this;
 	var currPlayerBox = options.currPlayerBox;
-	
-	var currPlayer = '1';
-	function changePlayer(to) {
-		if (to === undefined)
-			currPlayer = (currPlayer==options.players[0]) ? options.players[1] : options.players[0]; // Could be smarter but this way we support possible future extensions
-		else // Assumes input is always good. In actual project it wouldn't
-			currPlayer = to;
-		$(options.playerStatusBoxSelector).text(currPlayer);
-	}
+	var currPlayer = options.players[0];
 	
 	function init() {
 		drawBoard();
 		attachEvents();
-		makePromises();
-		start();
+		startGame();
 	}
 	
 	function drawBoard() {
@@ -38,7 +36,7 @@ $.fn.dotsAndBoxes = function(user_options) {
 		var board = $('<div>').addClass('board');
 		
 		var dot = $('<div>').addClass('gameElement').addClass('dot');
-		var line = $('<div>').addClass('gameElement').addClass('line');
+		var line = $('<div>').addClass('gameElement').addClass('line').data('checked', false);
 		var line_vertical = line.clone().addClass('vertical');
 		var box = $('<div>').addClass('gameElement').addClass('box');
 		
@@ -72,20 +70,99 @@ $.fn.dotsAndBoxes = function(user_options) {
 	
 	function attachEvents() {
 		$('.line').click(function() {
+			if ($(this).data('checked') === true)
+				return;
+			
 			$(this)
 				.data('checked', true)
-				.addClass('checked')
+				.addClass('checked');
+			endTurn();
 		});
 		
 	} // attachEvents()
 	
-	function makePromises() {
-	
-	} // makePromises()
-	
-	function start() {
+	function startGame() {
+		$.each(options.players, function(){this.score = 0});
 		changePlayer(options.players[0]);
 	} // start()
+	
+	function is_box_done(box) {
+		// Expects jQuery element.
+		// Returns boolean
+		// TODO: Make smarter! This is a basic boring approach. Plus the filter is a pain.
+		
+		var col = box.data('col');
+		var row = box.data('row');
+		var width = options.width;
+		
+		
+		// Top / bottom, there are 3 horizontals per row
+		if (game.find('.line:not(".vertical")').eq(row * (width-1) + col).data('checked') !== true)
+			return false;
+		
+		if (game.find('.line:not(".vertical")').eq((row+1) * (width-1) + col).data('checked') !== true)
+			return false;
+		
+		// Left / right, there are 4 verticals per row
+		if (game.find('.line.vertical').eq(row * width + col+1).data('checked') !== true)
+			return false;
+		
+		if (game.find('.line.vertical').eq(row * width + col).data('checked') !== true)
+			return false;
+		
+		return true;
+
+	} // is_box_done()
+	
+	function changePlayer(to) {
+		if (to === undefined)
+			currPlayer = (currPlayer==options.players[0]) ? options.players[1] : options.players[0]; // Could be smarter but this way we support possible future extensions
+		else // Assumes input is always good. In actual project it wouldn't
+			currPlayer = to;
+		$(options.playerStatusBoxSelector)
+			.css('color', currPlayer.color) // TODO: general CSS
+			.text(currPlayer.name);
+	} // changePlayer()
+	
+	function is_game_done() {
+		res = true;
+		game.find('.box').each(function(){
+			if ($(this).data('done') !== true)
+				res = false;
+		});
+		return res;
+	}
+
+	function endTurn() {
+		var did_we_score = false;
+		game.find('.box').each(function(){
+			if ($(this).hasClass('done'))
+				return;
+			if (is_box_done($(this))) { // Player won
+				$(this).addClass('done');
+				$(this).data('done', true);
+				$(this).css('background', currPlayer.color);
+				currPlayer.score++;
+				did_we_score = true;
+			}
+		});
+		if (did_we_score === false)
+			changePlayer();
+		if (did_we_score === true)
+			if (is_game_done() === true)
+				announceWinner();
+		
+	} // endTurn()
+	
+	function announceWinner() {
+		var winner;
+		var score=0;
+		$.each(options.players, function(){ // Support for >2 because it's easy
+			if (this.score > score)
+				winner = this;
+		});
+		game.find(options.playerStatusBoxSelector).text(options.winningText + winner.name);
+	}
 	
 	init();
 } // fn.dotsAndBoxes
@@ -97,7 +174,11 @@ $.fn.dotsAndBoxes.defaults = {
 	currPlayerBox: $('<div class="scores">Now Playing: <span class="player">None</span></div>'),
 	playerStatusBoxSelector: '.scores .player',
 	height: 4,
-	players: ['Player 1', 'Player 2'], // Assuming array with 2 items.
-	width: 4
+	players: [
+				{name: 'Player 1', color: 'blue'},
+				{name: 'Player 2', color: 'red'}
+	], // Assuming array with 2 items.
+	width: 4,
+	winningText: 'The winner is: ' // If this were a real app I'd use templates. Grammar doesn't always work this way (e.g. Japanese)
 }
 } )(jQuery); // (function() {

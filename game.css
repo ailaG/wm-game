@@ -48,6 +48,9 @@
 			margin: 5px;
 			width: 110px;
 		}
+		#game .board .box.done {
+			background: pink;
+		}
 	
 	#game .scores {
 		font-size: 1.2em;
