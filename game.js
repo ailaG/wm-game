@@ -2,14 +2,14 @@
 	Code for task: https://gist.github.com/santhoshtr/546d143100376481de72 
 	Galia Bahat <galia@galiaba.com>
 	
+	To execute on an element of your choice use CSS_SELECTOR.dotsAndBoxes({options}) or empty for defaults.
+	See defaults (in this file) for parameters.
+	
 	Note: Partially prepared for n!=4. The JS is, the CSS isn't. It's a small project after all :)
 
 	Note: Naming conventions: lowerCamelCase for normal functions, underscores_like_that for vars or questions that 
 		return a boolean such as is_this_the_real_life() is_this_just_fantasy(). I can work with other conventions
 		I just like this one.
-	
-	TODO: The way a box checks whether it's completed and the way the game checks whether it's done needs to 
-		change into something like $.deferred / promises
 ***/
 
 
@@ -25,7 +25,7 @@ $.fn.dotsAndBoxes = function(user_options) {
 		drawBoard();
 		attachEvents();
 		startGame();
-	}
+	} // init()
 	
 	function drawBoard() {
 		var height = options.height;
@@ -57,7 +57,7 @@ $.fn.dotsAndBoxes = function(user_options) {
 			}
 			board.append(line_vertical.clone().data({'row' : row, 'col' : width}));
 		}
-		for (col=0; col<width-1; col++) { // TODO: avoid dups
+		for (col=0; col<width-1; col++) {
 			board.append(dot.clone());
 			board.append(line.clone().data({'row' : height, 'col' : col}));
 		}
@@ -89,7 +89,6 @@ $.fn.dotsAndBoxes = function(user_options) {
 	function is_box_done(box) {
 		// Expects jQuery element.
 		// Returns boolean
-		// TODO: Make smarter! This is a basic boring approach. Plus the filter is a pain.
 		
 		var col = box.data('col');
 		var row = box.data('row');
@@ -111,7 +110,6 @@ $.fn.dotsAndBoxes = function(user_options) {
 			return false;
 		
 		return true;
-
 	} // is_box_done()
 	
 	function changePlayer(to) {
@@ -120,7 +118,7 @@ $.fn.dotsAndBoxes = function(user_options) {
 		else // Assumes input is always good. In actual project it wouldn't
 			currPlayer = to;
 		$(options.playerStatusBoxSelector)
-			.css('color', currPlayer.color) // TODO: general CSS
+			.css('color', currPlayer.color) // TODO: change to general CSS, not just color
 			.text(currPlayer.name);
 	} // changePlayer()
 	
@@ -131,7 +129,7 @@ $.fn.dotsAndBoxes = function(user_options) {
 				res = false;
 		});
 		return res;
-	}
+	} // is_game_done()
 
 	function endTurn() {
 		var did_we_score = false;
@@ -151,7 +149,6 @@ $.fn.dotsAndBoxes = function(user_options) {
 		if (did_we_score === true)
 			if (is_game_done() === true)
 				announceWinner();
-		
 	} // endTurn()
 	
 	function announceWinner() {
@@ -162,10 +159,12 @@ $.fn.dotsAndBoxes = function(user_options) {
 				winner = this;
 		});
 		game.find(options.playerStatusBoxSelector).text(options.winningText + winner.name);
-	}
+	} // announceWinner()
 	
 	init();
 } // fn.dotsAndBoxes
+
+
 
 $.fn.dotsAndBoxes.defaults = { 
 	// Assumes options are good because otherwise we'd have 1000 code validation lines and this isn't what this task is about.
@@ -179,6 +178,9 @@ $.fn.dotsAndBoxes.defaults = {
 				{name: 'Player 2', color: 'red'}
 	], // Assuming array with 2 items.
 	width: 4,
-	winningText: 'The winner is: ' // If this were a real app I'd use templates. Grammar doesn't always work this way (e.g. Japanese)
+	winningText: 'The winner is: ' // If this were a real app I'd use templates instead. Grammar doesn't always work this way (e.g. Japanese)
 }
+
+
+
 } )(jQuery); // (function() {
