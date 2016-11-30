@@ -1,3 +1,3 @@
 # wm-game
 
-Dots and Boxes game for Wikimedia.
+Dots and Boxes game, naive / old fashioned implementation
